@@ -5,52 +5,41 @@ use std::slice;
 use windows::{core::Result, Win32::NetworkManagement::WNet};
 
 fn main() {
-    println!("Hello, world!");
-    get_connection();
+    let _ = get_connection("W:");
 }
 
 fn print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
 }
 
-fn get_connection() -> Result<()> {
-    let input = "S:";
+fn get_connection(input: &str) -> Result<()> {
+    // [in] `lplocalname`: Pointer to a constant null-terminated string that specifies the name of the
+    // local device to get the network name for
     let mut v: Vec<u16> = input.encode_utf16().collect();
-    v.push(0);
     let input_ptr = windows::core::PWSTR(v.as_mut_ptr());
 
-    let mut cch_buffer = 80_u32;
-    let mut remote_name = Vec::<u16>::with_capacity(cch_buffer as usize);
+    // [out] `lpremotename`: Pointer to a null-terminated string that receives the remote name used
+    // to make the connection
+    static BUFFER_SIZE: u32 = 255;
+    let mut remote_name = vec![0_u16; BUFFER_SIZE as usize];
     let remote_name_ptr = windows::core::PWSTR(remote_name.as_mut_ptr());
 
-    unsafe {
-        let length: *mut u32 = libc::malloc(mem::size_of::<u32>()) as *mut u32;
-        let result = WNet::WNetGetConnectionW(input_ptr, remote_name_ptr, length);
-        let result = WNet::WNetGetConnectionW(input_ptr, remote_name_ptr, length);
-        if result.is_ok() {
-            println!("OK");
-        } else {
-            println!("Not OK");
-            let hresult = result.to_hresult();
-            println!("{:?}", hresult);
-        }
-        // println!("{:?}", *length);
-        let length_slice = unsafe { slice::from_raw_parts(length, 1) };
-        println!("{}", length_slice[0]);
-        let length: usize = length_slice[0].try_into().unwrap();
-        print_type_of(&length);
+    // [in, out] `lpnlength`: Pointer to a variable that specivies the size of the buffer pointed
+    // to by the `lpremotename` parameter, in characters.  If the function fails because the buffer
+    // is not large enough, this parameter returns the required buffer size.
+    let mut length: u32 = BUFFER_SIZE;
 
-        let slice = unsafe { slice::from_raw_parts(remote_name.as_ptr(), length) };
-        let s = String::from_utf16(&slice).expect("Our bytes should be valid utf16");
-        // println!("{:?}", slice[0]);
-        println!("{}", s);
+    let result = unsafe { WNet::WNetGetConnectionW(input_ptr, remote_name_ptr, &mut length) };
+
+    if result.is_err() {
+        println!("Not OK:\n{:?}", result.to_hresult().message());
     }
 
-    // let s = String::from_utf16(&remote_name).expect("Our bytes should be valid utf16");
-    // println!("{}", s);
-
-    // let ss = String::from_utf16_lossy(&remote_name);
-    // println!("{}", ss);
+    // `remote_name` should have been updated with the remote name via the `lpremotename` pointer
+    // `length` should have been updated with the length of `remote_name`
+    let output = String::from_utf16(&remote_name[..length as usize])
+        .expect("Our bytes should be valid utf16");
+    println!("{}", output);
 
     Ok(())
 }

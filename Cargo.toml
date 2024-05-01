@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 libc = "0.2.153"
+winapi = "0.3.9"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
