@@ -1,5 +1,6 @@
 #[allow(unused_extern_crates)]
 extern crate libc;
+use clipboard_win::{formats, Clipboard, Getter, Setter};
 use std::mem;
 use std::slice;
 use windows::{core::Result, Win32::NetworkManagement::WNet};
@@ -40,6 +41,11 @@ fn get_connection(input: &str) -> Result<()> {
     let output = String::from_utf16(&remote_name[..length as usize])
         .expect("Our bytes should be valid utf16");
     println!("{}", output);
+
+    // let _clip = Clipboard::new_attempts(10).expect("Open clipboard");
+    // formats::Unicode
+    //     .write_clipboard(&output)
+    //     .expect("Write sample");
 
     Ok(())
 }
