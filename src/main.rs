@@ -1,17 +1,18 @@
 #[allow(unused_extern_crates)]
-extern crate libc;
-// use clipboard_win::{formats, Clipboard, Getter, Setter};
-use clipboard_win::{formats, set_clipboard};
-use std::mem;
+// extern crate libc;
+use clipboard_win::{formats, get_clipboard, set_clipboard};
+// use std::mem;
 use std::slice;
 use windows::{core::Result, Win32::NetworkManagement::WNet};
 
 fn main() {
+    // let input: String = get_clipboard(formats::Unicode).expect("To get clipboard");
+    // println!("{}", input);
     let _ = get_connection("W:");
 }
 
 fn print_type_of<T>(_: &T) {
-    println!("{}", std::any::type_name::<T>())
+    println!("{}", std::any::type_name::<T>());
 }
 
 fn get_connection(input: &str) -> Result<()> {
@@ -29,12 +30,16 @@ fn get_connection(input: &str) -> Result<()> {
     // [in, out] `lpnlength`: Pointer to a variable that specivies the size of the buffer pointed
     // to by the `lpremotename` parameter, in characters.  If the function fails because the buffer
     // is not large enough, this parameter returns the required buffer size.
-    let mut length: u32 = BUFFER_SIZE;
+    // let mut length: u32 = BUFFER_SIZE;
+    let mut length: u32 = 0;
 
     let result = unsafe { WNet::WNetGetConnectionW(input_ptr, remote_name_ptr, &mut length) };
+    let result = unsafe { WNet::WNetGetConnectionW(input_ptr, remote_name_ptr, &mut length) };
+    println!("{}", length);
 
     if result.is_err() {
         println!("Not OK:\n{:?}", result.to_hresult().message());
+        return Ok(());
     }
 
     // `remote_name` should have been updated with the remote name via the `lpremotename` pointer
@@ -43,7 +48,7 @@ fn get_connection(input: &str) -> Result<()> {
         .expect("Our bytes should be valid utf16");
     println!("{}", output);
 
-    set_clipboard(formats::Unicode, output).expect("To set clipboard");
+    // set_clipboard(formats::Unicode, output).expect("To set clipboard");
 
     Ok(())
 }
