@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 use clipboard_win::{formats, set_clipboard};
 use std::borrow::Borrow;
 use std::env;
@@ -6,6 +7,7 @@ use windows::{core::Result, Win32::NetworkManagement::WNet};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+
     let input = &args[1]; // First arg is the path to *this* exe
 
     // Create a path object
@@ -46,12 +48,10 @@ fn get_connection(input: &Path) -> Result<()> {
     // [in, out] `lpnlength`: Pointer to a variable that specivies the size of the buffer pointed
     // to by the `lpremotename` parameter, in characters.  If the function fails because the buffer
     // is not large enough, this parameter returns the required buffer size.
-    let mut length: u32 = 1;
+    let mut length: u32 = BUFFER_SIZE;
 
-    // I'm lazy, I could either find the actual length, or just call this twice and be given
-    // the length.
-    let _ = unsafe { WNet::WNetGetConnectionW(root_ptr, remote_name_ptr, &mut length) };
     let result = unsafe { WNet::WNetGetConnectionW(root_ptr, remote_name_ptr, &mut length) };
+    length = remote_name.iter().position(|x| *x == 0u16).unwrap_or(0) as u32;
 
     if result.is_err() {
         // we're *probably* a local path, just put the contents back on the clipboard
@@ -69,6 +69,7 @@ fn get_connection(input: &Path) -> Result<()> {
     length -= 1; // Avoid the null ternmination
     let output = String::from_utf16(&remote_name[..length as usize])
         .expect("Our bytes should be valid utf16");
+    
 
     // Replace the root with the connection name
     let universal_path = &input
