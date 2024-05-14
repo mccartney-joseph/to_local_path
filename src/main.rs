@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 use clipboard_win::{formats, set_clipboard};
 use std::borrow::Borrow;
 use std::env;
@@ -50,14 +51,7 @@ fn get_connection(input: &Path) -> Result<()> {
     let mut length: u32 = BUFFER_SIZE;
 
     let result = unsafe { WNet::WNetGetConnectionW(root_ptr, remote_name_ptr, &mut length) };
-    let mut i = 0;
-    for c in remote_name.iter() {
-        if *c == 0u16 {
-            break;
-        }
-        i += 1;
-    }
-    length = i;
+    length = remote_name.iter().position(|x| *x == 0u16).unwrap_or(0) as u32;
 
     if result.is_err() {
         // we're *probably* a local path, just put the contents back on the clipboard
@@ -75,6 +69,7 @@ fn get_connection(input: &Path) -> Result<()> {
     length -= 1; // Avoid the null ternmination
     let output = String::from_utf16(&remote_name[..length as usize])
         .expect("Our bytes should be valid utf16");
+    
 
     // Replace the root with the connection name
     let universal_path = &input
