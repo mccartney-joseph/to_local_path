@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 clipboard-win = "5.3.1"
 libc = "0.2.153"
+regex = "1.10.4"
 winapi = {version= "0.3", features=["winuser"]}
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
