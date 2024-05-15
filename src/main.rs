@@ -1,4 +1,4 @@
-// #![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 use clipboard_win::{formats, set_clipboard};
 use std::borrow::Borrow;
 use std::env;
