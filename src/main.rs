@@ -5,6 +5,7 @@ use std::env;
 use std::path::Path;
 use windows::{core::Result, Win32::NetworkManagement::WNet};
 
+#[derive(PartialEq)]
 enum Flags {
     Escape,
     EscapeAndQuote,
@@ -14,11 +15,14 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     let input = &args[1]; // First arg is the path to *this* program
-    let flag = match args[2].as_ref() {
-        "--mode=Escape" => Some(Flags::Escape),
-        "--mode=EscapeAndQuote" => Some(Flags::EscapeAndQuote),
-        _ => None,
-    };
+    let mut flag: Option<Flags> = None;
+    if args.len() > 2 {
+        flag = match args[2].as_ref() {
+            "--mode=Escape" => Some(Flags::Escape),
+            "--mode=EscapeAndQuote" => Some(Flags::EscapeAndQuote),
+            _ => None,
+        };
+    }
 
     // Create a path object
     let path = Path::new::<str>(input.borrow());
@@ -89,8 +93,21 @@ fn get_connection(input: &Path, flag: &Option<Flags>) -> Result<()> {
         .expect("I already know this is a good path")
         .replace(&root, &remote_name);
 
+    let mut modified_universal_path = universal_path.clone();
+    if flag.is_some() {
+        let flag_value = flag.as_ref().unwrap();
+        if *flag_value == Flags::Escape {
+            println!("You want me to escape the string");
+            modified_universal_path = universal_path.replace("\\", "\\\\");
+        }
+        if *flag_value == Flags::EscapeAndQuote {
+            modified_universal_path = universal_path.replace("\\", "\\\\");
+            modified_universal_path = format!("\"{}\"", modified_universal_path);
+        }
+    }
+
     // finally, place the new path on the clipboard
-    set_clipboard(formats::Unicode, universal_path.clone()).expect("To set clipboard");
+    set_clipboard(formats::Unicode, modified_universal_path.clone()).expect("To set clipboard");
 
     Ok(())
 }
