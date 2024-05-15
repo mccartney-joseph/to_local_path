@@ -34,18 +34,18 @@ fn get_connection(input: &Path) -> Result<()> {
         .next()
         .unwrap();
 
-    // [in] `lplocalname`: Pointer to a constant null-terminated string that specifies the name of the
-    // local device to get the network name for
+    // [in] `root_ptr`: Pointer to a null-terminated string that specifies the name of the
+    // local device to get the network name for. e.g. "S:", "W:", "D:"
     let mut root_u16_buffer = root.encode_utf16().chain([0u16]).collect::<Vec<u16>>();
     let root_ptr = windows::core::PWSTR(root_u16_buffer.as_mut_ptr());
 
-    // [out] `lpremotename`: Pointer to a null-terminated string that receives the remote name used
+    // [out] `remote_name_ptr`: Pointer to a null-terminated string that receives the remote name used
     // to make the connection
-    static BUFFER_SIZE: u32 = 255;
+    static BUFFER_SIZE: u32 = 257;
     let mut remote_name_buffer = vec![0_u16; BUFFER_SIZE as usize];
     let remote_name_ptr = windows::core::PWSTR(remote_name_buffer.as_mut_ptr());
 
-    // [in, out] `lpnlength`: Pointer to a variable that specivies the size of the buffer pointed
+    // [in, out] `lpnlength`: Pointer to a variable that specifies the size of the buffer pointed
     // to by the `lpremotename` parameter, in characters.  If the function fails because the buffer
     // is not large enough, this parameter returns the required buffer size.
     let mut length: u32 = BUFFER_SIZE;
@@ -66,7 +66,7 @@ fn get_connection(input: &Path) -> Result<()> {
         return Ok(());
     }
 
-    // `remote_name` should have been updated with the remote name via the `lpremotename` pointer
+    // `remote_name` should have been updated with the remote name via the `remote_name_ptr` pointer
     // `length` should have been updated with the length of `remote_name` if buffer is not large enough
     // Convert to string
     length -= 1; // Avoid the null ternmination
