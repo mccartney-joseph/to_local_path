@@ -1,14 +1,24 @@
-#![windows_subsystem = "windows"]
+// #![windows_subsystem = "windows"]
 use clipboard_win::{formats, set_clipboard};
 use std::borrow::Borrow;
 use std::env;
 use std::path::Path;
 use windows::{core::Result, Win32::NetworkManagement::WNet};
 
+enum Flags {
+    Escape,
+    EscapeAndQuote,
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
     let input = &args[1]; // First arg is the path to *this* program
+    let flag = match args[2].as_ref() {
+        "--mode=Escape" => Some(Flags::Escape),
+        "--mode=EscapeAndQuote" => Some(Flags::EscapeAndQuote),
+        _ => None,
+    };
 
     // Create a path object
     let path = Path::new::<str>(input.borrow());
@@ -24,10 +34,10 @@ fn main() {
         return;
     }
 
-    let _ = get_connection(&path);
+    let _ = get_connection(&path, &flag);
 }
 
-fn get_connection(input: &Path) -> Result<()> {
+fn get_connection(input: &Path, flag: &Option<Flags>) -> Result<()> {
     let root: &str = input
         .components()
         .map(|comp| comp.as_os_str().to_str().unwrap())
