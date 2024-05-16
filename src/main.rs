@@ -81,7 +81,6 @@ fn get_connection(input: &Path, flag: &Option<Flags>) -> Result<()> {
         // `remote_name` should have been updated with the remote name via the `remote_name_ptr` pointer
         // `length` should have been updated with the length of `remote_name` if buffer is not large enough
         // Convert to string
-        length -= 1; // Avoid the null ternmination
         let remote_name = String::from_utf16(&remote_name_buffer[..length as usize])
             .expect("Our bytes should be valid utf16");
 
