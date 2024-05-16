@@ -7,7 +7,7 @@ use windows::{core::Result, Win32::NetworkManagement::WNet};
 
 #[derive(PartialEq)]
 enum Flags {
-    Escape,
+    Quote,
     EscapeAndQuote,
 }
 
@@ -18,7 +18,7 @@ fn main() {
     let mut flag: Option<Flags> = None;
     if args.len() > 2 {
         flag = match args[2].as_ref() {
-            "--mode=Escape" => Some(Flags::Escape),
+            "--mode=Quote" => Some(Flags::Quote),
             "--mode=EscapeAndQuote" => Some(Flags::EscapeAndQuote),
             _ => None,
         };
@@ -70,35 +70,33 @@ fn get_connection(input: &Path, flag: &Option<Flags>) -> Result<()> {
         .position(|x| *x == 0u16)
         .unwrap_or(0) as u32;
 
+    let universal_path: String;
     if result.is_err() {
-        // we're *probably* a local path, just put the contents back on the clipboard
-        set_clipboard(
-            formats::Unicode,
-            &input.to_str().expect("already a good path/string"),
-        )
-        .expect("To set clipboard");
-        return Ok(());
+        // we're a local path, no need to convert
+        universal_path = input
+            .to_str()
+            .expect("I already know this is a good path")
+            .to_string();
+    } else {
+        // `remote_name` should have been updated with the remote name via the `remote_name_ptr` pointer
+        // `length` should have been updated with the length of `remote_name` if buffer is not large enough
+        // Convert to string
+        length -= 1; // Avoid the null ternmination
+        let remote_name = String::from_utf16(&remote_name_buffer[..length as usize])
+            .expect("Our bytes should be valid utf16");
+
+        // Replace the root with the connection name
+        universal_path = input
+            .to_str()
+            .expect("I already know this is a good path")
+            .replace(&root, &remote_name);
     }
-
-    // `remote_name` should have been updated with the remote name via the `remote_name_ptr` pointer
-    // `length` should have been updated with the length of `remote_name` if buffer is not large enough
-    // Convert to string
-    length -= 1; // Avoid the null ternmination
-    let remote_name = String::from_utf16(&remote_name_buffer[..length as usize])
-        .expect("Our bytes should be valid utf16");
-
-    // Replace the root with the connection name
-    let universal_path = &input
-        .to_str()
-        .expect("I already know this is a good path")
-        .replace(&root, &remote_name);
 
     let mut modified_universal_path = universal_path.clone();
     if flag.is_some() {
         let flag_value = flag.as_ref().unwrap();
-        if *flag_value == Flags::Escape {
-            println!("You want me to escape the string");
-            modified_universal_path = universal_path.replace("\\", "\\\\");
+        if *flag_value == Flags::Quote {
+            modified_universal_path = format!("\"{}\"", modified_universal_path);
         }
         if *flag_value == Flags::EscapeAndQuote {
             modified_universal_path = universal_path.replace("\\", "\\\\");

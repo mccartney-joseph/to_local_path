@@ -32,7 +32,7 @@ Section
 	WriteRegStr HKCU \
 		"Software\Classes\*\shell\copy_as_universal_path" \
 		"SubCommands" \
-		"copy_as_universal_path;copy_as_universal_path_escape_and_quote"
+		"copy_as_universal_path;copy_as_universal_path_quote;copy_as_universal_path_escape_and_quote"
 	WriteRegStr HKCU \
 		"Software\Classes\*\shell\copy_as_universal_path" \
 		"Extended" \
@@ -45,7 +45,7 @@ Section
 	WriteRegStr HKCU \
 		"Software\Classes\directory\shell\copy_as_universal_path" \
 		"SubCommands" \
-		"copy_as_universal_path;copy_as_universal_path_escape_and_quote"
+		"copy_as_universal_path;copy_as_universal_path_quote;copy_as_universal_path_escape_and_quote"
 	WriteRegStr HKCU \
 		"Software\Classes\directory\shell\copy_as_universal_path" \
 		"Extended" \
@@ -60,6 +60,16 @@ Section
 		"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path\command" \
 		"" \
 		"$\"$PROFILE\${APP_NAME}\to_universal_path.exe$\" $\"%1$\""
+	
+	WriteRegStr HKLM \
+		"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_quote" \
+		"MUIVerb" \
+		"Copy as Universal Path (quote)"
+	WriteRegStr HKLM \
+		"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_quote\command" \
+		"" \
+		"$\"$PROFILE\${APP_NAME}\to_universal_path.exe$\" $\"%1$\" --mode=Quote"
+	
 	WriteRegStr HKLM \
 		"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_escape_and_quote" \
 		"MUIVerb" \
@@ -82,8 +92,9 @@ Section "Uninstall"
 	DeleteRegKey HKCU "Software\Classes\directory\shell\copy_as_universal_path"
 	
 	# Delete the actual commands
-	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_escape_and_quote"
 	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path"
+	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_quote"
+	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_escape_and_quote"
 	
 	# Delete installed file
 	Delete $INSTDIR\to_universal_path.exe
