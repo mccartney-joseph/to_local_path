@@ -1,3 +1,5 @@
+# https://stackoverflow.com/questions/20449316/how-add-context-menu-item-to-windows-explorer-for-folders
+
 !define APP_NAME "CopyAsUniversalPath"
 
 # define installer Name
@@ -19,11 +21,6 @@ Section
 	
 	# Modify the registery to add explorer context menu items, these will need to be undone for uninstall
 	SetRegView 64
-	; WriteRegStr HKCU \
-		; "Software\Classes\*\shell\copy_as_universal_path\command" \
-		; "" \
-		; "$\"$PROFILE\${APP_NAME}\to_universal_path.exe$\" $\"%1$\""
-		
 	# Register for file
 	WriteRegStr HKCU \
 		"Software\Classes\*\shell\copy_as_universal_path" \
@@ -78,8 +75,6 @@ Section
 		"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_escape_and_quote\command" \
 		"" \
 		"$\"$PROFILE\${APP_NAME}\to_universal_path.exe$\" $\"%1$\" --mode=EscapeAndQuote"
-
-	; WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path\command" "command" "$\"D:\source_control\Rust\to_universal_path\target\release\to_universal_path.exe$\" $\"%1$\" --mode=EscapeAndQuote"
 SectionEnd # Default section end
 
 # create a section to define what the uninstaller does.
