@@ -34,6 +34,7 @@ Section
 		"Software\Classes\*\shell\copy_as_universal_path" \
 		"Extended" \
 		""
+	
 	# Register for folder
 	WriteRegStr HKCU \
 		"Software\Classes\directory\shell\copy_as_universal_path" \
@@ -45,6 +46,20 @@ Section
 		"copy_as_universal_path;copy_as_universal_path_quote;copy_as_universal_path_escape_and_quote"
 	WriteRegStr HKCU \
 		"Software\Classes\directory\shell\copy_as_universal_path" \
+		"Extended" \
+		""
+	
+	# Register for BACKGROUND
+	WriteRegStr HKCU \
+		"Software\Classes\directory\Background\shell\copy_as_universal_path" \
+		"MUIVerb" \
+		"Copy as Universal Path"
+	WriteRegStr HKCU \
+		"Software\Classes\directory\Background\shell\copy_as_universal_path" \
+		"SubCommands" \
+		"copy_as_universal_path_background;copy_as_universal_path_quote_background;copy_as_universal_path_escape_and_quote_background"
+	WriteRegStr HKCU \
+		"Software\Classes\directory\Background\shell\copy_as_universal_path" \
 		"Extended" \
 		""
 		
@@ -75,6 +90,36 @@ Section
 		"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_escape_and_quote\command" \
 		"" \
 		"$\"$PROFILE\${APP_NAME}\to_universal_path.exe$\" $\"%1$\" --mode=EscapeAndQuote"
+
+	
+	# Background commands (because of COURSE they must be different...)
+
+	WriteRegStr HKLM \
+		"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_background" \
+		"MUIVerb" \
+		"Copy as Universal Path"
+	WriteRegStr HKLM \
+		"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_background\command" \
+		"" \
+		"$\"$PROFILE\${APP_NAME}\to_universal_path.exe$\" $\"%V$\""
+	
+	WriteRegStr HKLM \
+		"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_quote_background" \
+		"MUIVerb" \
+		"Copy as Universal Path (quote)"
+	WriteRegStr HKLM \
+		"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_quote_background\command" \
+		"" \
+		"$\"$PROFILE\${APP_NAME}\to_universal_path.exe$\" $\"%V$\" --mode=Quote"
+	
+	WriteRegStr HKLM \
+		"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_escape_and_quote_background" \
+		"MUIVerb" \
+		"Copy as Universal Path (quote and escape)"
+	WriteRegStr HKLM \
+		"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_escape_and_quote_background\command" \
+		"" \
+		"$\"$PROFILE\${APP_NAME}\to_universal_path.exe$\" $\"%V$\" --mode=EscapeAndQuote"
 SectionEnd # Default section end
 
 # create a section to define what the uninstaller does.
@@ -85,11 +130,16 @@ Section "Uninstall"
 	DeleteRegKey HKCU "Software\Classes\*\shell\copy_as_universal_path"
 	# delete folder context menu item
 	DeleteRegKey HKCU "Software\Classes\directory\shell\copy_as_universal_path"
+	# Delete the BACKGROUND context menu item
+	DeleteRegKey HKCU "Software\Classes\directory\Background\shell\copy_as_universal_path"
 	
 	# Delete the actual commands
 	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path"
 	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_quote"
 	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_escape_and_quote"
+	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_background"
+	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_quote_background"
+	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\copy_as_universal_path_escape_and_quote_background"
 	
 	# Delete installed file
 	Delete $INSTDIR\to_universal_path.exe
