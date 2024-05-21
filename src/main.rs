@@ -27,17 +27,6 @@ fn main() {
     // Create a path object
     let path = Path::new::<str>(input.borrow());
 
-    // Check if the path is valid
-    if !path.exists() {
-        println!("Path does not exist");
-        return;
-    }
-
-    if !path.has_root() {
-        println!("Path does not have a root");
-        return;
-    }
-
     let _ = get_connection(&path, &flag);
 }
 
